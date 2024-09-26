@@ -44,13 +44,13 @@ void reverseLines(char *filename_in, char *filename_out) {
     int capacity = 10;
 
     if (strcmp(filename_in, filename_out) == 0) {
-        fprintf(stderr, "El archivo de entrada y salida deben diferir\n");
+        fprintf(stderr, "reverse: input and output file must differ\n");
         exit(1);
     }
 
     file_in = fopen(filename_in, "r");
     if (file_in == NULL) {
-        fprintf(stderr, "error: cannot open file '%s'\n", filename_in);
+        fprintf(stderr, "reverse: cannot open file '%s'\n", filename_in);
         exit(1);
     }
 
@@ -90,14 +90,23 @@ void reverseLines(char *filename_in, char *filename_out) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
+    /*if (argc != 3) {
         fprintf(stderr, "usage: reverse <input> <output>\n");
         return 1;
-    }
+    }*/
 
     char *input_filename = argv[1];
     char *output_filename = argv[2];
 
+    // Validar si el archivo de entrada existe
+    FILE *file_check = fopen(input_filename, "w");
+    if (file_check == NULL) {
+        fprintf(stderr, "reverse: cannot open file '%s'\n", input_filename);
+        return 1;
+    }
+    fclose(file_check);
+
+    // Llama a la función para invertir líneas
     reverseLines(input_filename, output_filename);
 
     printf("El archivo se ha invertido y guardado en %s\n", output_filename);
