@@ -43,10 +43,10 @@ void reverseLines(char *filename_in, char *filename_out) {
     int line_count = 0;
     int capacity = 10;
 
-    if (strcmp(filename_in, filename_out) == 0) {
+    /*if (strcmp(filename_in, filename_out) == 0) {
         fprintf(stderr, "reverse: input and output file must differ\n");
         exit(1);
-    }
+    }*/
 
     file_in = fopen(filename_in, "r");
     if (file_in == NULL) {
@@ -90,21 +90,38 @@ void reverseLines(char *filename_in, char *filename_out) {
 }
 
 int main(int argc, char *argv[]) {
-    /*if (argc != 3) {
-        fprintf(stderr, "usage: reverse <input> <output>\n");
-        return 1;
-    }*/
 
     char *input_filename = argv[1];
     char *output_filename = argv[2];
 
+    // Validar si los nombres de los archivos son iguales
+    if (strcmp(input_filename, output_filename) == 0) {
+        fprintf(stderr, "reverse: input and output file must differ\n");
+        return 1;
+    }
+
     // Validar si el archivo de entrada existe
-    FILE *file_check = fopen(input_filename, "w");
+    FILE *file_check = fopen(input_filename, "r");
     if (file_check == NULL) {
+        // Reemplazar el caracter especial en el nombre del archivo
+        char *cleaned_filename = input_filename;
+        while (*cleaned_filename) {
+            if (*cleaned_filename == '\r') {
+                *cleaned_filename = '\0';
+                break;
+            }
+            cleaned_filename++;
+        }
         fprintf(stderr, "reverse: cannot open file '%s'\n", input_filename);
         return 1;
     }
     fclose(file_check);
+
+    //Si se le entregan mas o menos de 3 argumentos, falla
+    if (argc != 3) {
+        fprintf(stderr, "usage: reverse <input> <output>\n");
+        return 1;
+    }
 
     // Llama a la función para invertir líneas
     reverseLines(input_filename, output_filename);
