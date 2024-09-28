@@ -125,8 +125,6 @@ int main(int argc, char *argv[]) {
 
     // Llama a la función para invertir líneas
     reverseLines(input_filename, output_filename);
-
-    printf("El archivo se ha invertido y guardado en %s\n", output_filename);
     
     return 0;
 }
