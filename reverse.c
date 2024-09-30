@@ -2,43 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-char *readLine(FILE *file) {
-    int buffer_size = 100; 
-    int length = 0;        
-    char *buffer = malloc(buffer_size * sizeof(char));
-
-    // Verifica si la asignación de memoria falló
-    if (buffer == NULL) {
-        fprintf(stderr, "malloc failed\n");
-        exit(1);
-    }
-
-    // Lee caracteres uno por uno hasta encontrar "End Of Line" o un salto de línea
-    char c;
-    while ((c = fgetc(file)) != EOF && c != '\n') {
-        buffer[length++] = c;
-
-        if (length >= buffer_size) {
-            buffer_size *= 2;
-            buffer = realloc(buffer, buffer_size * sizeof(char));
-
-            if (buffer == NULL) {
-                fprintf(stderr, "malloc failed\n");
-                exit(1);
-            }
-        }
-    }
-
-    buffer[length] = '\0';
-
-    if (length == 0 && c == EOF) {
-        free(buffer);
-        return NULL;
-    }
-
-    return buffer;
-}
-
 void reverseLines(char *filename_in, char *filename_out) {
     FILE *file_in, *file_out;
     char **lines = NULL;
@@ -66,8 +29,15 @@ void reverseLines(char *filename_in, char *filename_out) {
     }
 
     // Lee cada línea del archivo de entrada y la almacena en el array
-    char *line;
-    while ((line = readLine(file_in)) != NULL) {
+    char *line = NULL;
+    size_t length = 0;
+    while (getline(&line, &length, file_in) != -1) {
+        // Elimina el salto de línea al final si existe
+        size_t line_len = strlen(line);
+        if (line_len > 0 && line[line_len - 1] == '\n') {
+            line[line_len - 1] = '\0'; // Reemplaza el '\n' con '\0' caracter de terminación de cadena
+        }
+
         if (line_count >= capacity) {
             capacity *= 2; 
             lines = realloc(lines, capacity * sizeof(char *));
@@ -76,8 +46,9 @@ void reverseLines(char *filename_in, char *filename_out) {
                 exit(1);
             }
         }
-        lines[line_count++] = line;
+        lines[line_count++] = strdup(line); // Almacena una copia de la línea
     }
+    free(line); // Libera el buffer de línea
     fclose(file_in);
 
     // Abre el archivo de salida para escritura
@@ -90,11 +61,11 @@ void reverseLines(char *filename_in, char *filename_out) {
     // Escribe las líneas en orden inverso en el archivo de salida
     for (int i = line_count - 1; i >= 0; i--) {
         fprintf(file_out, "%s\n", lines[i]);
-        free(lines[i]);
+        free(lines[i]); // Libera cada línea almacenada
     }
 
     fclose(file_out);
-    free(lines);
+    free(lines); // Libera el array
 }
 
 int main(int argc, char *argv[]) {
