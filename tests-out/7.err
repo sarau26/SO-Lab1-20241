@@ -1,1 +1,1 @@
-./tester/run-tests.sh: line 27:  1796 Segmentation fault      ./reverse < tests/7.in
+./tester/run-tests.sh: line 27: tests/7.in: No such file or directory

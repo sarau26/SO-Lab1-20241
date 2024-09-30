@@ -43,10 +43,10 @@ void reverseLines(char *filename_in, char *filename_out) {
     int line_count = 0;
     int capacity = 10;
 
-    /*if (strcmp(filename_in, filename_out) == 0) {
+    if (strcmp(filename_in, filename_out) == 0) {
         fprintf(stderr, "reverse: input and output file must differ\n");
         exit(1);
-    }*/
+    }
 
     file_in = fopen(filename_in, "r");
     if (file_in == NULL) {
@@ -95,10 +95,10 @@ int main(int argc, char *argv[]) {
     char *output_filename = argv[2];
 
     // Validar si los nombres de los archivos son iguales
-    if (strcmp(input_filename, output_filename) == 0) {
+    /*if (strcmp(input_filename, output_filename) == 0) {
         fprintf(stderr, "reverse: input and output file must differ\n");
         return 1;
-    }
+    }*/
 
     // Validar si el archivo de entrada existe
     FILE *file_check = fopen(input_filename, "r");
