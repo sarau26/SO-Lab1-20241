@@ -1,25 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
-void reverseLines(char *filename_in, char *filename_out) {
-    FILE *file_in, *file_out;
+// Función para verificar si los dos archivos son iguales
+int same_file(const char *file1, const char *file2) {
+    struct stat stat1, stat2;
+    if (stat(file1, &stat1) != 0 || stat(file2, &stat2) != 0) {
+        return -1;
+    }
+    return (stat1.st_dev == stat2.st_dev && stat1.st_ino == stat2.st_ino) ? 1 : 0;
+}
+
+void reverseLines(FILE *file_in, FILE *file_out) {
     char **lines = NULL;
     int line_count = 0;
     int capacity = 10;
-
-    // Verifica que el archivo de entrada y salida no sean el mismo
-    if (strcmp(filename_in, filename_out) == 0) {
-        fprintf(stderr, "reverse: input and output file must differ\n");
-        exit(1);
-    }
-
-    // Abre el archivo de entrada para lectura
-    file_in = fopen(filename_in, "r");
-    if (file_in == NULL) {
-        fprintf(stderr, "reverse: cannot open file '%s'\n", filename_in);
-        exit(1);
-    }
 
     // Asigna memoria para el array de líneas
     lines = malloc(capacity * sizeof(char *));
@@ -35,7 +31,7 @@ void reverseLines(char *filename_in, char *filename_out) {
         // Elimina el salto de línea al final si existe
         size_t line_len = strlen(line);
         if (line_len > 0 && line[line_len - 1] == '\n') {
-            line[line_len - 1] = '\0'; // Reemplaza el '\n' con '\0' caracter de terminación de cadena
+            line[line_len - 1] = '\0'; // Reemplaza el '\n' con '\0'
         }
 
         if (line_count >= capacity) {
@@ -49,14 +45,6 @@ void reverseLines(char *filename_in, char *filename_out) {
         lines[line_count++] = strdup(line); // Almacena una copia de la línea
     }
     free(line); // Libera el buffer de línea
-    fclose(file_in);
-
-    // Abre el archivo de salida para escritura
-    file_out = fopen(filename_out, "w");
-    if (file_out == NULL) {
-        fprintf(stderr, "error: cannot open file '%s'\n", filename_out);
-        exit(1);
-    }
 
     // Escribe las líneas en orden inverso en el archivo de salida
     for (int i = line_count - 1; i >= 0; i--) {
@@ -64,40 +52,53 @@ void reverseLines(char *filename_in, char *filename_out) {
         free(lines[i]); // Libera cada línea almacenada
     }
 
-    fclose(file_out);
     free(lines); // Libera el array
 }
 
 int main(int argc, char *argv[]) {
+    FILE *file_in = NULL;
+    FILE *file_out = NULL;
 
-    char *input_filename = argv[1];
-    char *output_filename = argv[2];
-
-    // Valida si el archivo de entrada existe
-    FILE *file_check = fopen(input_filename, "r");
-    if (file_check == NULL) {
-        // Reemplaza el caracter especial en el nombre del archivo
-        char *cleaned_filename = input_filename;
-        while (*cleaned_filename) {
-            if (*cleaned_filename == '\r') {
-                *cleaned_filename = '\0';
-                break;
-            }
-            cleaned_filename++;
+    if (argc == 1) {
+        // Sin argumentos: leer de stdin
+        file_in = stdin;
+        file_out = stdout;
+    } else if (argc == 2) {
+        // Un argumento: leer de un archivo y mostrar en stdout
+        file_in = fopen(argv[1], "r");
+        if (file_in == NULL) {
+            fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
+            return 1;
         }
-        fprintf(stderr, "reverse: cannot open file '%s'\n", input_filename);
-        return 1;
-    }
-    fclose(file_check);
-
-    //Si se le entregan mas o menos de 3 argumentos, falla
-    if (argc != 3) {
+        file_out = stdout;
+    } else if (argc == 3) {
+        // Dos argumentos: leer de un archivo y escribir en otro
+        if (same_file(argv[1], argv[2]) == 1) {
+            fprintf(stderr, "reverse: input and output file must differ\n");
+            return 1;
+        }
+        file_in = fopen(argv[1], "r");
+        if (file_in == NULL) {
+            fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
+            return 1;
+        }
+        file_out = fopen(argv[2], "w");
+        if (file_out == NULL) {
+            fprintf(stderr, "reverse: cannot open file '%s'\n", argv[2]);
+            fclose(file_in);
+            return 1;
+        }
+    } else {
         fprintf(stderr, "usage: reverse <input> <output>\n");
         return 1;
     }
 
     // Llama a la función para invertir líneas
-    reverseLines(input_filename, output_filename);
+    reverseLines(file_in, file_out);
+
+    // Cierra los archivos si son distintos de stdin y stdout
+    if (file_in != stdin) fclose(file_in);
+    if (file_out != stdout) fclose(file_out);
     
     return 0;
 }
