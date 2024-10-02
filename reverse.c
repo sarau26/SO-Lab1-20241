@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
         file_out = stdout;
     } else if (argc == 3) {
         // Dos argumentos: leer de un archivo y escribir en otro
-        if (same_file(argv[1], argv[2]) == 1) {
+        if (compareFiles(argv[1], argv[2]) == 1) {
             fprintf(stderr, "reverse: input and output file must differ\n");
             return 1;
         }
