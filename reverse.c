@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 
 // Función para verificar si los dos archivos son iguales
-int same_file(const char *file1, const char *file2) {
+int compareFiles(const char *file1, const char *file2) {
     struct stat stat1, stat2;
     if (stat(file1, &stat1) != 0 || stat(file2, &stat2) != 0) {
         return -1;
@@ -27,7 +27,7 @@ void reverseLines(FILE *file_in, FILE *file_out) {
     // Lee cada línea del archivo de entrada y la almacena en el array
     char *line = NULL;
     size_t length = 0;
-    while (getline(&line, &length, file_in) != -1) {
+    while (getline(&line, &length, file_in) > 0) {
         // Elimina el salto de línea al final si existe
         size_t line_len = strlen(line);
         if (line_len > 0 && line[line_len - 1] == '\n') {
